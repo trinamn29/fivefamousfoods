@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Five Easy & Famous Foods — Interactive Recipes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f7fafc; /* light */
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#fb7185; /* pinkish */
+      --accent-2:#60a5fa; /* blue */
+      --glass: rgba(255,255,255,0.7);
+      --radius:14px;
+      --shadow: 0 8px 24px rgba(16,24,40,0.08);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,var(--bg), #ffffff);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:32px;
+    }
+
+    .container{max-width:1100px;margin:0 auto}
+
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .brand{display:flex;gap:14px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:20px;box-shadow:var(--shadow)}
+    h1{margin:0;font-size:20px}
+    .subtitle{color:var(--muted);font-size:13px}
+
+    .controls{display:flex;gap:12px;align-items:center}
+    .search{padding:10px 14px;border-radius:12px;border:1px solid #e6e9ef;background:white;min-width:220px}
+    .btn{padding:10px 14px;border-radius:12px;border:0;background:var(--accent);color:white;font-weight:600;cursor:pointer}
+    .btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(99,102,241,0.12)}
+
+    main{display:grid;grid-template-columns:1fr 380px;gap:26px}
+
+    /* left grid */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;gap:12px}
+    .card .hero{height:140px;border-radius:10px;overflow:hidden;background:linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02));display:flex}
+    .card .hero img{width:100%;height:100%;object-fit:cover}
+    .card h3{margin:0;font-size:16px}
+    .meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+    .tags{display:flex;gap:8px;flex-wrap:wrap}
+    .tag{background:#f1f5f9;padding:6px 8px;border-radius:999px;font-size:12px;color:#374151}
+    .card footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+
+    /* right panel */
+    .panel{position:sticky;top:32px;background:var(--card);padding:18px;border-radius:14px;box-shadow:var(--shadow)}
+    .panel h2{margin:0 0 8px 0}
+    .ingredients{display:flex;flex-direction:column;gap:6px}
+    .ingredient{display:flex;justify-content:space-between}
+
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;padding:20px}
+    .modal{width:100%;max-width:820px;background:var(--card);border-radius:14px;padding:18px;box-shadow:0 20px 50px rgba(2,6,23,0.35);}
+    .modal .steps{display:flex;flex-direction:column;gap:12px}
+    .step{padding:12px;border-radius:10px;background:#f8fafc;border:1px solid rgba(15,23,42,0.04)}
+    .step h4{margin:0}
+    .close{background:transparent;border:0;cursor:pointer;font-weight:700}
+
+    /* responsive */
+    @media (max-width:980px){main{grid-template-columns:1fr} .grid{grid-template-columns:1fr} .panel{position:relative;top:auto}}
+
+    /* subtle animations */
+    .card{transition:transform .25s ease, box-shadow .25s ease}
+    .card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(16,24,40,0.08)}
+
+    /* small helpers */
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, rgba(96,165,250,0.12), rgba(251,113,133,0.08));font-weight:600}
+    .timer{display:flex;gap:8px;align-items:center}
+    .small{font-size:13px}
+
+    /* accessible focus */
+    button:focus, input:focus{outline:3px solid rgba(99,102,241,0.12);outline-offset:2px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">5F</div>
+        <div>
+          <h1>Five Famous Foods — Quick & Interactive</h1>
+          <div class="subtitle">Clear steps, printable ingredients, built-in timers — light and easy to use.</div>
+        </div>
+      </div>
+      <div class="controls">
+        <input id="q" class="search" placeholder="Search by food, ingredient, or style..." />
+        <button id="showAll" class="btn secondary">Show All</button>
+        <button id="printBtn" class="btn">Print</button>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="grid" id="cards">
+
+          <!-- cards injected by JS -->
+
+        </div>
+      </section>
+
+      <aside class="panel" id="panel">
+        <h2>Recipe Preview</h2>
+        <div id="previewArea">
+          <p class="muted">Select a recipe to see ingredients, steps and tools. You can start a timer for each step and print the recipe.</p>
+        </div>
+      </aside>
+    </main>
+
+  </div>
+
+  <!-- modal -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-hidden="true">
+    <div class="modal" role="document">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <h3 id="modalTitle">Recipe</h3>
+          <div class="muted small" id="modalMeta">meta</div>
+        </div>
+        <div>
+          <button class="close" id="printModal">Print</button>
+          <button class="close" id="closeModal">✕</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        <div style="flex:1;min-width:280px">
+          <h4>Ingredients</h4>
+          <div id="modalIngredients" class="ingredients"></div>
+        </div>
+        <div style="flex:1;min-width:280px">
+          <h4>Steps</h4>
+          <div class="steps" id="modalSteps"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const RECIPES = [
+      {
+        id:'pizza',
+        title:'Classic Margherita Pizza',
+        origin:'Italy',
+        time: '45 min',
+        difficulty:'Easy',
+        tags:['baked','vegetarian'],
+        img:'https://picsum.photos/id/1025/1200/800',
+        ingredients:[
+          '250g strong bread flour', '160ml warm water', '7g instant yeast', '1 tsp salt', '2 tbsp olive oil', '100g tomato passata', '150g fresh mozzarella', 'fresh basil leaves'
+        ],
+        steps:[
+          {title:'Make dough', text:'Mix flour, yeast and salt. Add water and olive oil, knead 6–8 minutes. Let rest 30 minutes.' ,minutes:30},
+          {title:'Shape & sauce', text:'Stretch dough into a 25cm base. Spread passata, tear mozzarella on top.' ,minutes:5},
+          {title:'Bake', text:'Bake in a very hot oven (250°C/480°F) for 8–10 minutes until golden.' ,minutes:10}
+        ]
+      },
+      {
+        id:'sushi',
+        title:'Simple Salmon Sushi Rolls',
+        origin:'Japan',
+        time:'30 min',
+        difficulty:'Medium',
+        tags:['no-bake','seafood'],
+        img:'https://picsum.photos/id/292/1200/800',
+        ingredients:['2 cups sushi rice','2.5 cups water','3 tbsp rice vinegar','4 nori sheets','200g fresh salmon (sashimi-grade)','soy sauce & wasabi'],
+        steps:[
+          {title:'Cook rice', text:'Rinse rice until water runs clear. Cook with 2.5 cups water. Fold in rice vinegar and cool.' ,minutes:20},
+          {title:'Roll', text:'Place nori on bamboo mat, spread rice, add salmon strip, roll tightly and slice.' ,minutes:8}
+        ]
+      },
+      {
+        id:'padthai',
+        title:'Quick Pad Thai',
+        origin:'Thailand',
+        time:'25 min',
+        difficulty:'Easy',
+        tags:['stir-fry','street-food'],
+        img:'https://picsum.photos/id/1080/1200/800',
+        ingredients:['200g rice noodles','150g prawns or tofu','2 eggs','2 tbsp tamarind paste','1 tbsp fish sauce or soy','2 tbsp palm sugar','spring onions & crushed peanuts'],
+        steps:[
+          {title:'Soak noodles', text:'Soak rice noodles in warm water until pliable (5–8 min).',minutes:8},
+          {title:'Stir-fry', text:'Fry garlic and protein, add noodles and sauce (tamarind, fish sauce, sugar), push aside and scramble eggs then toss.' ,minutes:10}
+        ]
+      },
+      {
+        id:'tacos',
+        title:'Street Tacos al Pastor (Quick)',
+        origin:'Mexico',
+        time:'30 min',
+        difficulty:'Easy',
+        tags:['grill','spicy'],
+        img:'https://picsum.photos/id/1081/1200/800',
+        ingredients:['300g pork shoulder thinly sliced','pineapple slices','1 tbsp achiote paste or chili sauce','corn tortillas','onion & cilantro'],
+        steps:[
+          {title:'Marinate', text:'Toss pork with achiote or chili sauce for at least 10 minutes.' ,minutes:10},
+          {title:'Cook & assemble', text:'Pan-fry until charred, warm tortillas, top with pineapple, onion and cilantro.' ,minutes:10}
+        ]
+      },
+      {
+        id:'pancakes',
+        title:'Fluffy Buttermilk Pancakes',
+        origin:'USA',
+        time:'20 min',
+        difficulty:'Easy',
+        tags:['breakfast','sweet'],
+        img:'https://picsum.photos/id/1067/1200/800',
+        ingredients:['200g plain flour','2 tbsp sugar','2 tsp baking powder','1 egg','300ml buttermilk or milk + yogurt','butter for frying','maple syrup'],
+        steps:[
+          {title:'Mix batter', text:'Whisk dry ingredients, combine with egg and buttermilk until just mixed.' ,minutes:5},
+          {title:'Cook', text:'Spoon batter onto a hot pan, cook 2–3 min per side until golden.' ,minutes:8}
+        ]
+      }
+    ];
+
+    const cardsEl = document.getElementById('cards');
+    const preview = document.getElementById('previewArea');
+    const q = document.getElementById('q');
+    const showAll = document.getElementById('showAll');
+    const printBtn = document.getElementById('printBtn');
+
+    function createCard(r){
+      const el = document.createElement('article');
+      el.className = 'card';
+      el.innerHTML = `
+        <div class="hero"><img src="${r.img}" alt="${r.title}"></div>
+        <div>
+          <h3>${r.title}</h3>
+          <div class="meta">${r.origin} · ${r.time} · <span class="muted">${r.difficulty}</span></div>
+          <div class="tags" style="margin-top:8px">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        </div>
+        <footer>
+          <div class="pill">${r.tags[0]}</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn secondary" data-action="preview" data-id="${r.id}">Preview</button>
+            <button class="btn" data-action="open" data-id="${r.id}">Open</button>
+          </div>
+        </footer>
+      `;
+      return el;
+    }
+
+    function renderGrid(list){
+      cardsEl.innerHTML = '';
+      list.forEach(r=>cardsEl.appendChild(createCard(r)));
+    }
+
+    function shortList(){
+      // show featured ordering
+      const order = ['pizza','pancakes','padthai','sushi','tacos'];
+      return order.map(id=>RECIPES.find(r=>r.id===id)).filter(Boolean);
+    }
+
+    function showPreview(id){
+      const r = RECIPES.find(x=>x.id===id);
+      if(!r) return;
+      preview.innerHTML = `
+        <div style="display:flex;gap:12px;align-items:center">
+          <img src="${r.img}" alt="${r.title}" style="width:84px;height:84px;object-fit:cover;border-radius:10px">
+          <div>
+            <h3 style="margin:0">${r.title}</h3>
+            <div class="muted small">${r.origin} · ${r.time} · ${r.difficulty}</div>
+          </div>
+        </div>
+        <hr style="margin:12px 0;border:none;border-top:1px solid #eef2f7">
+        <strong>Ingredients</strong>
+        <div class="ingredients" style="margin-top:8px">
+          ${r.ingredients.map(i=>`<div class="ingredient"><span>${i}</span><button class="small" data-clip="${escapeHtml(i)}">Copy</button></div>`).join('')}
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" data-open="${r.id}">Open Full</button>
+          <button class="btn secondary" data-print="${r.id}">Print</button>
+        </div>
+      `;
+    }
+
+    function openModal(id){
+      const r = RECIPES.find(x=>x.id===id);
+      if(!r) return;
+      document.getElementById('modalTitle').textContent = r.title;
+      document.getElementById('modalMeta').textContent = `${r.origin} · ${r.time} · ${r.difficulty}`;
+      const ing = document.getElementById('modalIngredients');
+      ing.innerHTML = r.ingredients.map(i=>`<div class="ingredient"><span>${i}</span><div><button class="small" data-clip="${escapeHtml(i)}">Copy</button></div></div>`).join('');
+      const stepsEl = document.getElementById('modalSteps');
+      stepsEl.innerHTML = r.steps.map((s, idx)=>`<div class="step" data-mins="${s.minutes || 0}"><h4>${idx+1}. ${s.title}</h4><p class="muted small">${s.text}</p><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" data-start="${s.minutes || 0}">Start ${s.minutes || 0}m</button><button class="btn secondary" data-mark="${idx}">Done</button></div></div>`).join('');
+
+      const backdrop = document.getElementById('modalBackdrop');
+      backdrop.style.display = 'flex';
+      backdrop.setAttribute('aria-hidden','false');
+    }
+
+    function closeModal(){
+      const backdrop = document.getElementById('modalBackdrop');
+      backdrop.style.display = 'none';
+      backdrop.setAttribute('aria-hidden','true');
+    }
+
+    // copy helper
+    function escapeHtml(s){return s.replace(/"/g,'&quot;').replace(/'/g,'\'')}
+
+    document.addEventListener('click', (e)=>{
+      const t = e.target;
+      if(t.matches('[data-action="preview"]')){
+        const id = t.getAttribute('data-id'); showPreview(id);
+      }
+      if(t.matches('[data-action="open"]') || t.matches('button[data-open]')){
+        const id = t.getAttribute('data-id') || t.getAttribute('data-open'); openModal(id);
+      }
+      if(t.matches('#closeModal')) closeModal();
+      if(t.matches('#printModal')) window.print();
+      if(t.matches('button[data-start]')){
+        const mins = Number(t.getAttribute('data-start')) || 0; if(mins<=0){alert('No timer set for this step');return}
+        startTimer(mins*60);
+      }
+      if(t.matches('button[data-clip]')){
+        const text = t.getAttribute('data-clip'); navigator.clipboard?.writeText(text).then(()=>{t.textContent='Copied'}).catch(()=>{alert('Copy failed')});
+      }
+      if(t.matches('button[data-mark]')){
+        t.textContent = 'Done'; t.disabled = true; t.closest('.step').style.opacity = 0.6;
+      }
+      if(t.matches('button[data-print]')){
+        const id = t.getAttribute('data-print'); printRecipe(id);
+      }
+      if(t.matches('#showAll')){
+        renderGrid(RECIPES);
+      }
+      if(t.matches('#printBtn')){
+        window.print();
+      }
+    });
+
+    // basic search
+    q.addEventListener('input', ()=>{
+      const val = q.value.trim().toLowerCase();
+      if(!val){renderGrid(shortList()); return}
+      const found = RECIPES.filter(r=>{
+        return r.title.toLowerCase().includes(val) || r.ingredients.join(' ').toLowerCase().includes(val) || r.tags.join(' ').includes(val) || r.origin.toLowerCase().includes(val);
+      });
+      renderGrid(found);
+    });
+
+    // print recipe function (simple new window)
+    function printRecipe(id){
+      const r = RECIPES.find(x=>x.id===id);
+      if(!r) return;
+      const win = window.open('','_blank');
+      win.document.write(`<html><head><title>${r.title}</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:Inter,Arial;padding:24px"><h1>${r.title}</h1><p>${r.origin} · ${r.time}</p><h3>Ingredients</h3><ul>${r.ingredients.map(i=>`<li>${i}</li>`).join('')}</ul><h3>Steps</h3><ol>${r.steps.map(s=>`<li><strong>${s.title}</strong> — ${s.text}</li>`).join('')}</ol></body></html>`);
+      win.document.close(); win.focus(); win.print();
+    }
+
+    // timer (simple countdown shown as alert when done)
+    let timerInterval;
+    function startTimer(seconds){
+      if(timerInterval) clearInterval(timerInterval);
+      const end = Date.now()+seconds*1000;
+      const update = ()=>{
+        const remain = Math.max(0, Math.round((end-Date.now())/1000));
+        const mins = Math.floor(remain/60); const secs = remain%60;
+        document.title = `Timer: ${mins}:${secs.toString().padStart(2,'0')}`;
+        if(remain<=0){clearInterval(timerInterval);timerInterval=null;document.title='Five Famous Foods — Interactive Recipes';alert('Timer finished!');}
+      };
+      update(); timerInterval = setInterval(update,1000);
+    }
+
+    // initialize
+    renderGrid(shortList());
+
+    // accessibility: close modal on ESC
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+  </script>
+</body>
+</html>
